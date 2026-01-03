@@ -33,7 +33,7 @@ WITH DATA;
 CREATE INDEX idx_vm_minhas_inscricoes_user ON VM_MinhasInscricoes(ID_Usuario);
 
 -- STORED PROCEDURE - CANCELAMENTO SEGURO + AUDITORIA
-CREATE OR REPLACE PROCEDURE sp_RealizarCancelamentoSeguro(
+CREATE OR REPLACE PROCEDURE SP_RealizarCancelamentoSeguro(
     IN p_ID_Inscricao INT,
     IN p_ID_Usuario INT,
     IN p_Motivo VARCHAR
