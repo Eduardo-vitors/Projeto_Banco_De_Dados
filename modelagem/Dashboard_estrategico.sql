@@ -40,7 +40,8 @@ conversao AS (
     evento,
     COUNT(*) AS inscritos_evento,
     COUNT(*) FILTER (WHERE fez_atividade) AS inscritos_com_atividade,
-    ROUND(100.0 * COUNT(*) FILTER (WHERE fez_atividade) / NULLIF(COUNT(*),0), 2) AS conversao_pct
+    ROUND(100.0 * COUNT(*) FILTER (WHERE fez_atividade) / NULLIF(COUNT(*),0), 2) AS conversao_pct,
+    ROW_NUMBER() OVER () AS row_id  -- Adicionado para índice único
   FROM flag_atividade
   GROUP BY evento
 )
@@ -52,7 +53,8 @@ SELECT
   conversao_pct::numeric AS valor_principal,
   inscritos_com_atividade::numeric AS valor_absoluto,
   inscritos_evento::numeric AS valor_base,
-  RANK() OVER (ORDER BY conversao_pct DESC) AS ranking
+  RANK() OVER (ORDER BY conversao_pct DESC) AS ranking,
+  row_id AS id_unico  -- Para índice único
 FROM conversao
 
 UNION ALL
@@ -66,7 +68,8 @@ SELECT
   ROUND(100.0 * SUM(p.vl_valorpago) / NULLIF(SUM(SUM(p.vl_valorpago)) OVER (PARTITION BY r.tp_area), 0), 2),
   SUM(p.vl_valorpago)::numeric,
   COUNT(DISTINCT u.id_usuario)::numeric,
-  DENSE_RANK() OVER (PARTITION BY r.tp_area ORDER BY SUM(p.vl_valorpago) DESC)
+  DENSE_RANK() OVER (PARTITION BY r.tp_area ORDER BY SUM(p.vl_valorpago) DESC),
+  ROW_NUMBER() OVER () + 100000  -- IDs únicos
 FROM tb_registro r
 JOIN tb_inscricao i ON i.id_registro = r.id_registro
 JOIN tb_usuario u   ON u.id_usuario = i.id_usuario
@@ -76,7 +79,7 @@ GROUP BY r.tp_area, u.ds_instituicao
 
 UNION ALL
 
--- 3) GRÁFICO: CERTIFICAÇÃO POR EVENTO (Qualidade) - SEM CTE INTERNO
+-- 3) GRÁFICO: CERTIFICAÇÃO POR EVENTO (Qualidade)
 SELECT
   'Qualidade_Certificacao'::varchar,
   'Taxa de Certificação',
@@ -93,7 +96,8 @@ SELECT
       1.0 * COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM tb_certificado c WHERE c.id_inscricao = i.id_inscricao))
       / NULLIF(COUNT(*) FILTER (WHERE i.st_presente), 0)
     ) DESC
-  )
+  ),
+  ROW_NUMBER() OVER () + 200000  -- IDs únicos
 FROM tb_registro e
 JOIN tb_inscricao i ON i.id_registro = e.id_registro
 WHERE e.tp_registro = 'Evento'
@@ -101,7 +105,7 @@ GROUP BY e.ds_titulo
 
 UNION ALL
 
--- 4) GRÁFICO: REINCIDÊNCIA POR INSTITUIÇÃO (Fidelização) - SEM CTE INTERNO
+-- 4) GRÁFICO: REINCIDÊNCIA POR INSTITUIÇÃO (Fidelização)
 SELECT
   'Fidelizacao_Instituicao'::varchar,
   'Taxa de Reincidência',
@@ -118,7 +122,8 @@ SELECT
       1.0 * COUNT(DISTINCT CASE WHEN eventos_usuario.qtd_eventos >= 2 THEN u.id_usuario END)
       / NULLIF(COUNT(DISTINCT u.id_usuario), 0)
     ) DESC
-  )
+  ),
+  ROW_NUMBER() OVER () + 300000  -- IDs únicos
 FROM tb_usuario u
 JOIN tb_inscricao i ON i.id_usuario = u.id_usuario
 JOIN tb_registro e ON e.id_registro = i.id_registro
@@ -135,15 +140,20 @@ JOIN (
 WHERE e.tp_registro = 'Evento'
 GROUP BY u.ds_instituicao;
 
--- Índice para otimização
-CREATE INDEX idx_mv_dashboard_tipo ON mv_dashboard_estrategico_completo(tipo_grafico);
+-- Índice ÚNICO obrigatório para REFRESH CONCURRENTLY
+CREATE UNIQUE INDEX idx_mv_dashboard_id_unico ON mv_dashboard_estrategico_completo(id_unico);
 
--- Stored Procedure para atualizar o dashboard
+-- Índices adicionais para otimização
+CREATE INDEX idx_mv_dashboard_tipo ON mv_dashboard_estrategico_completo(tipo_grafico);
+CREATE INDEX idx_mv_dashboard_kpi_dimensao ON mv_dashboard_estrategico_completo(tipo_grafico, dimensao_principal);
+
+-- Stored Procedure para atualizar o dashboard (agora sem CONCURRENTLY)
 CREATE OR REPLACE PROCEDURE sp_atualizar_dashboard_estrategico()
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    REFRESH MATERIALIZED VIEW CONCURRENTLY mv_dashboard_estrategico_completo;
+    -- Atualização simples (bloqueante, mas mais segura)
+    REFRESH MATERIALIZED VIEW mv_dashboard_estrategico_completo;
     RAISE NOTICE 'Dashboard estratégico atualizado em: %', CURRENT_TIMESTAMP;
 END;
 $$;
