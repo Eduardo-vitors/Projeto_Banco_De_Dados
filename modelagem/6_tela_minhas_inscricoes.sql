@@ -97,11 +97,9 @@ BEGIN
     -- Log de Auditoria
     INSERT INTO TB_AuditoriaCancelamento (
         ID_Inscricao, 
-        ID_Usuario,
         DS_Motivo
     ) VALUES (
         p_ID_Inscricao,
-        p_ID_Usuario,
         p_Motivo
     );
 	RAISE NOTICE 'Sucesso: Inscrição % cancelada.', p_ID_Inscricao;
