@@ -1,12 +1,3 @@
--- TABELA AUDITORIA CANCELAMENTO INSCRICAO
-CREATE TABLE IF NOT EXISTS TB_AuditoriaCancelamento (
-    ID_Log INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    ID_Inscricao INT,
-    ID_Usuario_Acao INT,
-    DH_Acao TIMESTAMP DEFAULT NOW(),
-    Motivo VARCHAR(255)
-);
-
 -- MATERIALIZED VIEW - MINHAS INSCRIÇÕES
 CREATE MATERIALIZED VIEW VM_MinhasInscricoes AS
 SELECT 
@@ -106,14 +97,12 @@ BEGIN
     -- Log de Auditoria
     INSERT INTO TB_AuditoriaCancelamento (
         ID_Inscricao, 
-        ID_Usuario_Solicitante, 
-        Motivo_Cancelamento, 
-        Regra_Aplicada
+        ID_Usuario,
+        DS_Motivo
     ) VALUES (
-        p_ID_Inscricao, 
-        p_ID_Usuario, 
-        p_Motivo, 
-        'Solicitação via Tela do Usuário (Prazo OK)'
+        p_ID_Inscricao,
+        p_ID_Usuario,
+        p_Motivo
     );
 	RAISE NOTICE 'Sucesso: Inscrição % cancelada.', p_ID_Inscricao;
 END;
