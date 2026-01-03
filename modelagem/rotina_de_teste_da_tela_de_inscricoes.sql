@@ -27,9 +27,14 @@ LIMIT 1;
 CALL public.sp_realizarcancelamentoseguro(
 	'21', -- id inscrição
 	'9', -- id usuário
-	''
+	'motivos de saúde'
 );
 
--- 3. Consulta LOG
+-- 3. Verificar se o status mudou na tabela original
+SELECT ID_Inscricao, ST_Pagamento, ST_Presente 
+FROM TB_Inscricao 
+WHERE ID_Inscricao = 21;
+
+-- 4. Consulta LOG
 SELECT * FROM TB_AuditoriaCancelamento
 WHERE ID_Inscricao = 21; -- id inscrição
