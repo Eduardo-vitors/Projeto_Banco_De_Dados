@@ -1,159 +1,164 @@
--- ====================================================
--- DASHBOARD 1: 4 GRÁFICOS ANALÍTICOS ESTRATÉGICOS
--- Materialized View com 4 KPIs estratégicos
--- ====================================================
+-- ============================================================
+-- DASHBOARD ESTRATÉGICO (4 gráficos analíticos) - MARCO 2
+-- Materialized View (vetorial) + Stored Procedure (refresh)
+-- Saída: nome_grafico, tipo_grafico_sugerido, eixo_x, eixo_y_valor, valor_secundario, rotulo_secundario
+-- ============================================================
 
-DROP MATERIALIZED VIEW IF EXISTS mv_dashboard_estrategico_completo;
-DROP PROCEDURE IF EXISTS sp_atualizar_dashboard_estrategico;
+DROP MATERIALIZED VIEW IF EXISTS mv_dashboard_estrategico_vetores;
 
--- Materialized View que agrega os 4 gráficos estratégicos
-CREATE MATERIALIZED VIEW mv_dashboard_estrategico_completo AS
+CREATE MATERIALIZED VIEW mv_dashboard_estrategico_vetores AS
 
--- 1) GRÁFICO: CONVERSÃO EVENTO → ATIVIDADES (Engajamento)
-WITH 
-inscritos_evento AS (
-  SELECT
-    e.id_registro AS id_evento,
-    e.ds_titulo   AS evento,
-    i.id_usuario
-  FROM tb_registro e
-  JOIN tb_inscricao i ON i.id_registro = e.id_registro
-  WHERE e.tp_registro = 'Evento'
-),
-flag_atividade AS (
-  SELECT
-    ie.id_evento,
-    ie.evento,
-    ie.id_usuario,
-    EXISTS (
-      SELECT 1
-      FROM tb_inscricao ia
-      JOIN tb_registro a ON a.id_registro = ia.id_registro
-      WHERE ia.id_usuario = ie.id_usuario
-        AND a.tp_registro = 'Atividade'
-        AND a.id_eventopai = ie.id_evento
-    ) AS fez_atividade
-  FROM inscritos_evento ie
-),
-conversao AS (
-  SELECT
-    evento,
-    COUNT(*) AS inscritos_evento,
-    COUNT(*) FILTER (WHERE fez_atividade) AS inscritos_com_atividade,
-    ROUND(100.0 * COUNT(*) FILTER (WHERE fez_atividade) / NULLIF(COUNT(*),0), 2) AS conversao_pct,
-    ROW_NUMBER() OVER () AS row_id  -- Adicionado para índice único
-  FROM flag_atividade
-  GROUP BY evento
-)
+/* ------------------------------------------------------------
+ S1 (AVANÇADA): Receita mensal por ÁREA (tp_area) + acumulado por área
+ - 3 tabelas: tb_registro, tb_inscricao, tb_pagamento
+ - JOIN + GROUP BY + WINDOW
+------------------------------------------------------------ */
 SELECT
-  'Engajamento_Evento_Atividade'::varchar AS tipo_grafico,
-  'Taxa de Conversão'::varchar AS titulo_grafico,
-  evento AS dimensao_principal,
-  NULL::varchar AS dimensao_secundaria,
-  conversao_pct::numeric AS valor_principal,
-  inscritos_com_atividade::numeric AS valor_absoluto,
-  inscritos_evento::numeric AS valor_base,
-  RANK() OVER (ORDER BY conversao_pct DESC) AS ranking,
-  row_id AS id_unico  -- Para índice único
-FROM conversao
-
-UNION ALL
-
--- 2) GRÁFICO: RECEITA POR ÁREA X INSTITUIÇÃO (Faturamento)
-SELECT
-  'Faturamento_Area_Instituicao'::varchar,
-  'Distribuição de Receita',
-  r.tp_area,
-  u.ds_instituicao,
-  ROUND(100.0 * SUM(p.vl_valorpago) / NULLIF(SUM(SUM(p.vl_valorpago)) OVER (PARTITION BY r.tp_area), 0), 2),
-  SUM(p.vl_valorpago)::numeric,
-  COUNT(DISTINCT u.id_usuario)::numeric,
-  DENSE_RANK() OVER (PARTITION BY r.tp_area ORDER BY SUM(p.vl_valorpago) DESC),
-  ROW_NUMBER() OVER () + 100000  -- IDs únicos
+  'S1_Receita_Mensal_Por_Area_Acumulada'::text AS nome_grafico,
+  'line'::text AS tipo_grafico_sugerido,
+  (r.tp_area || ' | ' || TO_CHAR(p.dh_datapagamento, 'YYYY-MM')) AS eixo_x,
+  SUM(SUM(p.vl_valorpago)) OVER (
+    PARTITION BY r.tp_area
+    ORDER BY TO_CHAR(p.dh_datapagamento, 'YYYY-MM')
+    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+  )::numeric AS eixo_y_valor,
+  SUM(p.vl_valorpago)::numeric AS valor_secundario,
+  'receita_no_mes'::text AS rotulo_secundario
 FROM tb_registro r
 JOIN tb_inscricao i ON i.id_registro = r.id_registro
-JOIN tb_usuario u   ON u.id_usuario = i.id_usuario
 JOIN tb_pagamento p ON p.id_inscricao = i.id_inscricao
 WHERE r.tp_registro = 'Evento'
-GROUP BY r.tp_area, u.ds_instituicao
+GROUP BY r.tp_area, TO_CHAR(p.dh_datapagamento, 'YYYY-MM')
 
 UNION ALL
 
--- 3) GRÁFICO: CERTIFICAÇÃO POR EVENTO (Qualidade)
+/* ------------------------------------------------------------
+ S2 (AVANÇADA): % de usuários recorrentes por mês (já tinham pago antes)
+ - 3 tabelas: tb_usuario, tb_inscricao, tb_pagamento
+ - SUBCONSULTA (EXISTS) + JOIN + GROUP BY + COUNT
+------------------------------------------------------------ */
 SELECT
-  'Qualidade_Certificacao'::varchar,
-  'Taxa de Certificação',
-  e.ds_titulo AS evento,
-  NULL::varchar,
+  'S2_Usuarios_Recorrentes_Por_Mes'::text,
+  'bar'::text,
+  TO_CHAR(p.dh_datapagamento, 'YYYY-MM') AS eixo_x,
   ROUND(
-    100.0 * COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM tb_certificado c WHERE c.id_inscricao = i.id_inscricao))
-    / NULLIF(COUNT(*) FILTER (WHERE i.st_presente), 0), 
-  2) AS taxa_certificacao_pct,
-  COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM tb_certificado c WHERE c.id_inscricao = i.id_inscricao))::numeric,
-  COUNT(*) FILTER (WHERE i.st_presente)::numeric,
-  RANK() OVER (
-    ORDER BY (
-      1.0 * COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM tb_certificado c WHERE c.id_inscricao = i.id_inscricao))
-      / NULLIF(COUNT(*) FILTER (WHERE i.st_presente), 0)
-    ) DESC
-  ),
-  ROW_NUMBER() OVER () + 200000  -- IDs únicos
-FROM tb_registro e
-JOIN tb_inscricao i ON i.id_registro = e.id_registro
-WHERE e.tp_registro = 'Evento'
-GROUP BY e.ds_titulo
-
-UNION ALL
-
--- 4) GRÁFICO: REINCIDÊNCIA POR INSTITUIÇÃO (Fidelização)
-SELECT
-  'Fidelizacao_Instituicao'::varchar,
-  'Taxa de Reincidência',
-  u.ds_instituicao,
-  NULL::varchar,
-  ROUND(
-    100.0 * COUNT(DISTINCT CASE WHEN eventos_usuario.qtd_eventos >= 2 THEN u.id_usuario END)
-    / NULLIF(COUNT(DISTINCT u.id_usuario), 0), 
-  2) AS reincidencia_pct,
-  COUNT(DISTINCT CASE WHEN eventos_usuario.qtd_eventos >= 2 THEN u.id_usuario END)::numeric,
-  COUNT(DISTINCT u.id_usuario)::numeric,
-  DENSE_RANK() OVER (
-    ORDER BY (
-      1.0 * COUNT(DISTINCT CASE WHEN eventos_usuario.qtd_eventos >= 2 THEN u.id_usuario END)
-      / NULLIF(COUNT(DISTINCT u.id_usuario), 0)
-    ) DESC
-  ),
-  ROW_NUMBER() OVER () + 300000  -- IDs únicos
+    100.0 * COUNT(DISTINCT u.id_usuario) FILTER (
+      WHERE EXISTS (
+        SELECT 1
+        FROM tb_inscricao i2
+        JOIN tb_pagamento p2 ON p2.id_inscricao = i2.id_inscricao
+        WHERE i2.id_usuario = u.id_usuario
+          AND p2.dh_datapagamento < DATE_TRUNC('month', p.dh_datapagamento)
+      )
+    )
+    / NULLIF(COUNT(DISTINCT u.id_usuario), 0)
+  , 2)::numeric AS eixo_y_valor,
+  COUNT(DISTINCT u.id_usuario)::numeric AS valor_secundario,
+  'usuarios_unicos_no_mes'::text
 FROM tb_usuario u
 JOIN tb_inscricao i ON i.id_usuario = u.id_usuario
-JOIN tb_registro e ON e.id_registro = i.id_registro
-JOIN (
+JOIN tb_pagamento p ON p.id_inscricao = i.id_inscricao
+GROUP BY TO_CHAR(p.dh_datapagamento, 'YYYY-MM')
+
+UNION ALL
+
+/* ------------------------------------------------------------
+ S3 (AVANÇADA): Concentração de arrecadação por instituição (HHI)
+ - HHI alto = poucas instituições dominam a receita
+ - 3 tabelas: tb_usuario, tb_inscricao, tb_pagamento
+ - CTE + JOIN + GROUP BY + WINDOW
+------------------------------------------------------------ */
+SELECT *
+FROM (
+  WITH inst AS (
+    SELECT
+      u.ds_instituicao,
+      SUM(p.vl_valorpago) AS receita_inst
+    FROM tb_usuario u
+    JOIN tb_inscricao i ON i.id_usuario = u.id_usuario
+    JOIN tb_pagamento p ON p.id_inscricao = i.id_inscricao
+    GROUP BY u.ds_instituicao
+  ),
+  base AS (
+    SELECT
+      ds_instituicao,
+      receita_inst,
+      (receita_inst / NULLIF(SUM(receita_inst) OVER (), 0)) AS share
+    FROM inst
+  )
   SELECT
-    u2.id_usuario,
-    COUNT(DISTINCT e2.id_registro) AS qtd_eventos
-  FROM tb_usuario u2
-  JOIN tb_inscricao i2 ON i2.id_usuario = u2.id_usuario
-  JOIN tb_registro e2 ON e2.id_registro = i2.id_registro
-  WHERE e2.tp_registro = 'Evento'
-  GROUP BY u2.id_usuario
-) eventos_usuario ON eventos_usuario.id_usuario = u.id_usuario
-WHERE e.tp_registro = 'Evento'
-GROUP BY u.ds_instituicao;
+    'S3_Concentracao_Arrecadacao_Instituicao_HHI'::text AS nome_grafico,
+    'single'::text AS tipo_grafico_sugerido,
+    'HHI_Geral'::text AS eixo_x,
+    ROUND(SUM(share * share), 4)::numeric AS eixo_y_valor,
+    COUNT(*)::numeric AS valor_secundario,
+    'qtd_instituicoes'::text AS rotulo_secundario
+  FROM base
+) s3
 
--- Índice ÚNICO obrigatório para REFRESH CONCURRENTLY
-CREATE UNIQUE INDEX idx_mv_dashboard_id_unico ON mv_dashboard_estrategico_completo(id_unico);
+UNION ALL
 
--- Índices adicionais para otimização
-CREATE INDEX idx_mv_dashboard_tipo ON mv_dashboard_estrategico_completo(tipo_grafico);
-CREATE INDEX idx_mv_dashboard_kpi_dimensao ON mv_dashboard_estrategico_completo(tipo_grafico, dimensao_principal);
+/* ------------------------------------------------------------
+ S4 (AVANÇADA): Razão inscrições em ATIVIDADES / inscrições em EVENTOS (por evento pai)
+ - 3+ tabelas: tb_registro (evento), tb_registro (atividade), tb_inscricao
+ - CTEs + JOIN + GROUP BY + COUNT
+------------------------------------------------------------ */
+SELECT *
+FROM (
+  WITH eventos AS (
+    SELECT id_registro, ds_titulo
+    FROM tb_registro
+    WHERE tp_registro = 'Evento'
+  ),
+  ins_evento AS (
+    SELECT
+      e.id_registro AS id_evento,
+      COUNT(i.id_inscricao) AS inscritos_evento
+    FROM eventos e
+    LEFT JOIN tb_inscricao i ON i.id_registro = e.id_registro
+    GROUP BY e.id_registro
+  ),
+  ins_ativ AS (
+    SELECT
+      e.id_registro AS id_evento,
+      COUNT(i.id_inscricao) AS inscritos_atividades
+    FROM eventos e
+    JOIN tb_registro a
+      ON a.id_eventopai = e.id_registro
+     AND a.tp_registro = 'Atividade'
+    LEFT JOIN tb_inscricao i ON i.id_registro = a.id_registro
+    GROUP BY e.id_registro
+  )
+  SELECT
+    'S4_Razao_Atividade_por_Evento'::text AS nome_grafico,
+    'bar'::text AS tipo_grafico_sugerido,
+    e.ds_titulo AS eixo_x,
+    ROUND(
+      1.0 * COALESCE(ia.inscritos_atividades, 0)
+      / NULLIF(ie.inscritos_evento, 0),
+      4
+    )::numeric AS eixo_y_valor,
+    COALESCE(ia.inscritos_atividades, 0)::numeric AS valor_secundario,
+    'inscritos_atividades'::text AS rotulo_secundario
+  FROM eventos e
+  JOIN ins_evento ie ON ie.id_evento = e.id_registro
+  LEFT JOIN ins_ativ ia ON ia.id_evento = e.id_registro
+) s4
+;
 
--- Stored Procedure para atualizar o dashboard (agora sem CONCURRENTLY)
-CREATE OR REPLACE PROCEDURE sp_atualizar_dashboard_estrategico()
+DROP PROCEDURE IF EXISTS sp_refresh_dashboard_estrategico;
+
+CREATE PROCEDURE sp_refresh_dashboard_estrategico()
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Atualização simples (bloqueante, mas mais segura)
-    REFRESH MATERIALIZED VIEW mv_dashboard_estrategico_completo;
-    RAISE NOTICE 'Dashboard estratégico atualizado em: %', CURRENT_TIMESTAMP;
+  REFRESH MATERIALIZED VIEW mv_dashboard_estrategico_vetores;
 END;
 $$;
+
+CALL sp_refresh_dashboard_estrategico();
+
+SELECT *
+FROM mv_dashboard_estrategico_vetores
+ORDER BY nome_grafico, eixo_x;
+
