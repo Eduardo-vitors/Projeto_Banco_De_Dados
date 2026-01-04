@@ -111,21 +111,21 @@ Registro de todas as operações de cancelamento.
 Certifique-se de ter todos os arquivos abaixo salvos na mesma pasta:
 
 1. Infraestrutura Base:
-- `1_criacao_tabelas.sql`
-- `2_criacao_trigger.sql`
-- `3_plano_indexacao_avançado.sql`
-- `4_popular_tabelas.sql`
+   - `1_criacao_tabelas.sql`
+   - `2_criacao_trigger.sql`
+   - `3_plano_indexacao_avançado.sql`
+   - `4_popular_tabelas.sql`
 
 2. Funcionalidades (Telas):
-- `tela1_1_funcionalidades.sql` & `tela1_2_rotina_de_teste.sql`
-- `tela2_1_funcionalidades.sql` & `tela2_2_rotina_de_teste.sql`
+   - `tela1_1_funcionalidades.sql` & `tela1_2_rotina_de_teste.sql`
+   - `tela2_1_funcionalidades.sql` & `tela2_2_rotina_de_teste.sql`
 
 3. Dashboards (BI):
-- `dash1_1_consultas_agrupadas.sql` (Núcleo do Dash Estratégico)
-- `dash1_2_gerar_graficos.sql` (Visualização do Dash Estratégico)
-- `dash2_1_consultas_graficos.sql` (Núcleo do Dash Operacional)
-- `dash2_2_atualizar_graficos.sql` (Automação do Dash Operacional)
-- `dash2_3_gerar_graficos.sql` (Rotina de Visualização)
+   - `dash1_1_consultas_agrupadas.sql` (Núcleo do Dash Estratégico)
+   - `dash1_2_gerar_graficos.sql` (Visualização do Dash Estratégico)
+   - `dash2_1_consultas_graficos.sql` (Núcleo do Dash Operacional)
+   - `dash2_2_atualizar_graficos.sql` (Automação do Dash Operacional)
+   - `dash2_3_gerar_graficos.sql` (Rotina de Visualização)
 
 ## 🚀 Ordem de Execução (Passo a Passo)
 ### FASE 1: Infraestrutura Base
@@ -140,22 +140,22 @@ Certifique-se de ter todos os arquivos abaixo salvos na mesma pasta:
 
 ### FASE 3: Implementar Dashboards
 1. Dashboard Estratégico (Marco 2):
-- Execute `dash1_1_consultas_agrupadas.sql`.
-- Execute `dash1_2_gerar_graficos.sql`.
+   - Execute `dash1_1_consultas_agrupadas.sql`.
+   - Execute `dash1_2_gerar_graficos.sql`.
 
 2. Dashboard Operacional (Marco 3):
-- Execute `dash2_1_consultas_graficos.sql`.
-- Execute `dash2_2_atualizar_graficos.sql`.
+   - Execute `dash2_1_consultas_graficos.sql`.
+   - Execute `dash2_2_atualizar_graficos.sql`.
 
 ## 🔍 **Testes e Validações**
 1. Tela 1 - Autenticação e Gestão de Credenciais
-- Execute passo a passo os comandos presentes no arquivo `tela1_2_rotina_de_teste.sql`
+   - Execute passo a passo os comandos presentes no arquivo `tela1_2_rotina_de_teste.sql`
 2. Tela 2 - Gestão de Inscrições e Cancelamento Seguro
-- Execute passo a passo os comandos presentes no arquivo `tela2_2_rotina_de_teste.sql`
+   - Execute passo a passo os comandos presentes no arquivo `tela2_2_rotina_de_teste.sql`
 3. Dashboard 1 - Estratégico
-- a
+   - a
 4. Dashboard 2 - Operacional
-- a
+   - a
 
 **Desenvolvido para disciplina de Banco de Dados**  
 🎓 *Sistema completo de gestão acadêmica com foco em performance e usabilidade*
