@@ -82,122 +82,22 @@ Registro de todas as operações de cancelamento.
 - Timestamp da ação
 - Motivo do cancelamento
 
-## 🚀 **Requisitos Técnicos**
-
-- **PostgreSQL** (versão 12 ou superior recomendada)
-- **pgAdmin 4** ou cliente psql
-- Usuário do banco com privilégios de criação (`CREATE`, `INSERT`, `REFERENCES`, etc.)
-
-## 📁 **Sequência de Execução**
-
-### Via pgAdmin (GUI)
-
-1. **Conecte-se** ao servidor PostgreSQL
-2. **(Opcional) Crie um novo banco de dados:**
-   - Clique direito em "Databases" → "Create" → "Database..."
-   - Nome sugerido: `gestao_eventos`
-
-3. **Execute os scripts na ordem:**
-
-| Ordem | Arquivo | Descrição |
-|-------|---------|-----------|
-| 1 | `1_criacao_tabelas.sql` | Cria todas as tabelas e constraints |
-| 2 | `2_criacao_trigger.sql` | Cria triggers de validação |
-| 3 | `3_plano_indexacao_avançado.sql` | Cria índices para performance |
-| 4 | `4_popular_tabelas.sql` | Popula com dados de teste |
-
-4. **Para funcionalidades específicas:**
-
-| Módulo | Arquivos | Descrição |
-|--------|----------|-----------|
-| Autenticação | `tela1_1_funcionalidades.sql` | Login e recuperação de senha |
-| Inscrições | `tela2_1_funcionalidades.sql` | Gerenciamento de inscrições |
-| Dashboard Operacional | `dash2_1_consultas_graficos.sql`<br>`dash2_2_atualizar_graficos.sql` | Views para dashboards |
-| Dashboard Estratégico | `dash1_1_consultas_agrupadas` | Métricas estratégicas |
-
-### Como executar cada arquivo:
-
-1. Selecione o banco de dados no painel esquerdo
-2. Clique com o botão direito → "Query Tool"
-3. Vá em **File → Open** e selecione o arquivo SQL
-4. Execute com **F5** ou clique no botão ▶
-5. Verifique mensagens na aba "Messages"
-
-## 🔍 **Testes e Validações**
-
-Cada módulo possui scripts de teste:
-
-| Teste | Arquivo | Comando |
-|-------|---------|---------|
-| Autenticação | `tela1_2_rotina_de_teste.sql` | `CALL sp_loginusuario_login('00000000001', 'senha')` |
-| Cancelamento | `tela2_2_rotina_de_teste.sql` | `CALL sp_realizarcancelamentoseguro(21, 9, 'motivo')` |
-| Dashboards | `dash2_3_gerar_graficos.sql` | `CALL sp_atualizar_dashboard_operacional()` |
-| Dashboard Estratégico | `dash1_2_gerar_graficos` | `SELECT * FROM vw_grafico_s1_novos_usuarios_pagantes_mes` |
-
-## 📊 **Análise de Performance**
-
-### Planos de Indexação Disponíveis:
-- **Índices Compostos**: Otimizam consultas com múltiplas condições
-- **Índices Parciais**: Indexam apenas subconjuntos relevantes
-- **Índices para Dashboards**: Aceleram consultas analíticas
-
-### Para analisar planos de execução no pgAdmin:
-```sql
-EXPLAIN (ANALYZE, BUFFERS) 
-SELECT * FROM vm_dash2_grafico1_tendenciainscricoes;
-```
-
-## 🗑️ **Como Limpar o Banco (Estado Inicial)**
-
-### Remover TODOS os objetos:
-```sql
--- Remove todas as tabelas e objetos dependentes
-DROP TABLE IF EXISTS 
-    TB_Pagamento, 
-    TB_Certificado, 
-    TB_Inscricao, 
-    TB_Registro, 
-    TB_Usuario,
-    TB_RecuperacaoSenha,
-    TB_AuditoriaCancelamento 
-CASCADE;
-```
-
-### Remover índices específicos:
-```sql
--- Índices avançados
-DROP INDEX IF EXISTS 
-    idx_avanc_inscricao_funil,
-    idx_avanc_inscricao_usuario,
-    idx_avanc_registro_pai_tipo,
-    idx_avanc_registro_APENAS_EVENTOS,
-    idx_avanc_inscricao_APENAS_PRESENTES;
-
--- Views Materializadas
-DROP MATERIALIZED VIEW IF EXISTS 
-    vm_dash2_grafico1_tendenciainscricoes,
-    vm_dash2_grafico2_funilconversao,
-    vm_dash2_grafico3_ocupacaomodalidade,
-    vm_dash2_grafico4_statusfinanceiro,
-    vm_dash2_grafico5_topinstituicoes,
-    vm_dash2_grafico6_demandaatividades,
-    vm_loginusuarios,
-    vm_minhasinscricoes,
-    mv_dashboard_estrategico_vetores;
-
--- Procedures e Functions
-DROP PROCEDURE IF EXISTS 
-    sp_loginusuario_login,
-    sp_loginusuario_recuperar,
-    sp_loginusuario_atualizar,
-    sp_realizarcancelamentoseguro,
-    sp_atualizar_dashboard_operacional,
-    sp_refresh_dashboard_estrategico;
-
-DROP FUNCTION IF EXISTS fc_verificarinscricaoatividade;
-```
+## **Telas Implementadas**
+1. Autenticação e Gestão de Credenciais
+   - Funcioanlidade de Login
+   - Solicitar alteração da senha
+   - Alterar a senha
+2. Gestão de Inscrições e Cancelamento Seguro
+  - Visualizar inscrições em eventos
+  - Solicitar o cancelamento de uma inscrição
 
 ## 📈 **Dashboards Implementados**
+
+### Dashboard Estratégico (4 gráficos):
+1. **Novos Usuários Pagantes** - Crescimento da base
+2. **Ticket Médio Mensal** - Valor médio por pagamento
+3. **Receita por Método** - Distribuição por forma de pagamento
+4. **Taxa de Conversão** - Eficiência por evento
 
 ### Dashboard Operacional (6 gráficos):
 1. **Tendência de Inscrições** - Evolução temporal com média móvel
@@ -207,12 +107,55 @@ DROP FUNCTION IF EXISTS fc_verificarinscricaoatividade;
 5. **Top Instituições** - Participação por instituição
 6. **Demanda de Atividades** - Atividades mais populares
 
-### Dashboard Estratégico (4 gráficos):
-1. **Novos Usuários Pagantes** - Crescimento da base
-2. **Ticket Médio Mensal** - Valor médio por pagamento
-3. **Receita por Método** - Distribuição por forma de pagamento
-4. **Taxa de Conversão** - Eficiência por evento
+## 📋 Arquivos Necessários
+Certifique-se de ter todos os arquivos abaixo salvos na mesma pasta:
 
+1. Infraestrutura Base:
+- `1_criacao_tabelas.sql`
+- `2_criacao_trigger.sql`
+- `3_plano_indexacao_avançado.sql`
+- `4_popular_tabelas.sql`
+
+2. Funcionalidades (Telas):
+- `tela1_1_funcionalidades.sql` & `tela1_2_rotina_de_teste.sql`
+- `tela2_1_funcionalidades.sql` & `tela2_2_rotina_de_teste.sql`
+
+3. Dashboards (BI):
+- `dash1_1_consultas_agrupadas.sql` (Núcleo do Dash Estratégico)
+- `dash1_2_gerar_graficos.sql` (Visualização do Dash Estratégico)
+- `dash2_1_consultas_graficos.sql` (Núcleo do Dash Operacional)
+- `dash2_2_atualizar_graficos.sql` (Automação do Dash Operacional)
+- `dash2_3_gerar_graficos.sql` (Rotina de Visualização)
+
+## 🚀 Ordem de Execução (Passo a Passo)
+### FASE 1: Infraestrutura Base
+- Execute `1_criacao_tabelas.sql`.
+- Execute `2_criacao_trigger.sql`.
+- Execute `3_plano_indexacao_avançado.sql`.
+- Execute `4_popular_tabelas.sql`.
+
+### FASE 2: Funcionalidades das Telas
+- Execute `tela1_1_funcionalidades.sql`.
+- Execute `tela2_1_funcionalidades.sql`.
+
+### FASE 3: Implementar Dashboards
+1. Dashboard Estratégico (Marco 2):
+- Execute `dash1_1_consultas_agrupadas.sql`.
+- Execute `dash1_2_gerar_graficos.sql`.
+
+2. Dashboard Operacional (Marco 3):
+- Execute `dash2_1_consultas_graficos.sql`.
+- Execute `dash2_2_atualizar_graficos.sql`.
+
+## 🔍 **Testes e Validações**
+1. Tela 1 - Autenticação e Gestão de Credenciais
+- Execute passo a passo os comandos presentes no arquivo `tela1_2_rotina_de_teste.sql`
+2. Tela 2 - Gestão de Inscrições e Cancelamento Seguro
+- Execute passo a passo os comandos presentes no arquivo `tela2_2_rotina_de_teste.sql`
+3. Dashboard 1 - Estratégico
+- a
+4. Dashboard 2 - Operacional
+- a
 
 **Desenvolvido para disciplina de Banco de Dados**  
 🎓 *Sistema completo de gestão acadêmica com foco em performance e usabilidade*
