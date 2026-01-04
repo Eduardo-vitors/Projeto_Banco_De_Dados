@@ -2,8 +2,13 @@
 CALL sp_Atualizar_Dashboard_Operacional();
 
 -- GRÁFICO 1
-SELECT * FROM public.vm_dash2_grafico1_tendenciainscricoes
-WHERE Nome_Evento = 'Congresso de Tecnologia (Edição Passada)';
+SELECT 
+    eixo_x_data, 
+    eixo_y_qtd_diaria, -- Linha 1 do gráfico (Valores Brutos)
+    eixo_y_media_movel -- Linha 2 do gráfico (Tendência Suavizada)
+FROM public.vm_dash2_grafico1_tendenciainscricoes
+WHERE nome_evento = 'Congresso de Tecnologia (Edição Passada)'
+ORDER BY _data_ordenacao;
 
 -- GRÁFICO 2 
 SELECT 
