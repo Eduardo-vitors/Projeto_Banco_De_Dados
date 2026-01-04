@@ -2,8 +2,6 @@
 
 **Autores:** Eduardo Vitor dos Santos Silva e Silva, Elis Marcela de Souza Alcantara, Otávio Novais de Oliveira, Saulo Matos Pereira Gomes
 
-Os triggers estão aplicados direto no script de criação, mas deixamos o código disponível em arquivos separados.
-
 ## 🗂️ Estrutura do Sistema
 
 ### 👤 **Usuário (`TB_Usuario`)**
