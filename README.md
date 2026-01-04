@@ -112,22 +112,22 @@ Registro de todas as operações de cancelamento.
 ## 📋 Arquivos Necessários
 Certifique-se de ter todos os arquivos abaixo salvos na mesma pasta:
 
-1. Infraestrutura Base:
-   - `1_criacao_tabelas.sql`
-   - `2_criacao_trigger.sql`
-   - `3_plano_indexacao_avançado.sql`
-   - `4_popular_tabelas.sql`
+### Infraestrutura Base:
+- `1_criacao_tabelas.sql`
+- `2_criacao_trigger.sql`
+- `3_plano_indexacao_avançado.sql`
+- `4_popular_tabelas.sql`
 
-2. Funcionalidades (Telas):
-   - `tela1_1_funcionalidades.sql` & `tela1_2_rotina_de_teste.sql`
-   - `tela2_1_funcionalidades.sql` & `tela2_2_rotina_de_teste.sql`
+### Funcionalidades (Telas):
+- `tela1_1_funcionalidades.sql` & `tela1_2_rotina_de_teste.sql`
+- `tela2_1_funcionalidades.sql` & `tela2_2_rotina_de_teste.sql`
 
-3. Dashboards (BI):
-   - `dash1_1_consultas_agrupadas.sql` (Núcleo do Dash Estratégico)
-   - `dash1_2_gerar_graficos.sql` (Visualização do Dash Estratégico)
-   - `dash2_1_consultas_graficos.sql` (Núcleo do Dash Operacional)
-   - `dash2_2_atualizar_graficos.sql` (Automação do Dash Operacional)
-   - `dash2_3_gerar_graficos.sql` (Rotina de Visualização)
+### Dashboards:
+- `dash1_1_consultas_agrupadas.sql` (Núcleo do Dash Estratégico)
+- `dash1_2_gerar_graficos.sql` (Visualização do Dash Estratégico)
+- `dash2_1_consultas_graficos.sql` (Núcleo do Dash Operacional)
+- `dash2_2_atualizar_graficos.sql` (Automação do Dash Operacional)
+- `dash2_3_gerar_graficos.sql` (Rotina de Visualização)
 
 ## 🚀 Ordem de Execução (Passo a Passo)
 ### FASE 1: Infraestrutura Base
