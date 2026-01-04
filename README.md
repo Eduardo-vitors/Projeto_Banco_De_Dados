@@ -82,14 +82,16 @@ Registro de todas as operações de cancelamento.
 - Timestamp da ação
 - Motivo do cancelamento
 
-## **Telas Implementadas**
-1. Autenticação e Gestão de Credenciais
-   - Funcionalidade de Login
-   - Solicitar alteração da senha
-   - Alterar a senha
-2. Gestão de Inscrições e Cancelamento Seguro
-   - Visualizar inscrições em eventos
-   - Solicitar o cancelamento de uma inscrição
+## 💻 **Telas Implementadas**
+
+### Autenticação e Gestão de Credenciais
+- Funcionalidade de Login
+- Solicitar alteração da senha
+- Alterar a senha
+
+### Gestão de Inscrições e Cancelamento Seguro
+- Visualizar inscrições em eventos
+- Solicitar o cancelamento de uma inscrição
 
 ## 📈 **Dashboards Implementados**
 
@@ -146,20 +148,24 @@ Certifique-se de ter todos os arquivos abaixo salvos na mesma pasta:
    - Execute `dash2_2_atualizar_graficos.sql`.
 
 ## 🔍 **Testes e Validações**
-1. Tela 1 - Autenticação e Gestão de Credenciais
-   - Execute passo a passo os comandos presentes no arquivo `tela1_2_rotina_de_teste.sql`
-2. Tela 2 - Gestão de Inscrições e Cancelamento Seguro
-   - Execute passo a passo os comandos presentes no arquivo `tela2_2_rotina_de_teste.sql`
-3. Dashboard 1 - Estratégico
-   - Abra o arquivo `dash1_2_gerar_graficos.sql`
-   - Gere as view para cada gráfico que compõe o dashboard
-   - Execute a consulta para o gráfico que deseja exibir
-   - Acesse o Graph Visualizer e carregue os dados retornados pela query
-5. Dashboard 2 - Operacional
-   - Abra o arquivo `dash2_3_gerar_graficos.sql`
-   - Atualize as views chamando a Stored Procedure
-   - Execute a consulta para o gráfico que deseja exibir
-   - Acesse o Graph Visualizer e carregue os dados retornados pela query
+
+### Tela 1 - Autenticação e Gestão de Credenciais
+- Execute passo a passo os comandos presentes no arquivo `tela1_2_rotina_de_teste.sql`
+
+### Tela 2 - Gestão de Inscrições e Cancelamento Seguro
+- Execute passo a passo os comandos presentes no arquivo `tela2_2_rotina_de_teste.sql`
+
+### Dashboard 1 - Estratégico
+- Abra o arquivo `dash1_2_gerar_graficos.sql`
+- Gere as view para cada gráfico que compõe o dashboard
+- Execute a consulta para o gráfico que deseja exibir
+- Acesse o Graph Visualizer e carregue os dados retornados pela query
+
+### Dashboard 2 - Operacional
+- Abra o arquivo `dash2_3_gerar_graficos.sql`
+- Atualize as views chamando a Stored Procedure
+- Execute a consulta para o gráfico que deseja exibir
+- Acesse o Graph Visualizer e carregue os dados retornados pela query
 
 **Desenvolvido para disciplina de Banco de Dados**  
 🎓 *Sistema completo de gestão acadêmica com foco em performance e usabilidade*
