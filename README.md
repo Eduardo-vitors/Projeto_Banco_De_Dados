@@ -113,7 +113,7 @@ Registro de todas as operações de cancelamento.
 | Autenticação | `tela1_1_funcionalidades.sql` | Login e recuperação de senha |
 | Inscrições | `tela2_1_funcionalidades.sql` | Gerenciamento de inscrições |
 | Dashboard Operacional | `dash2_1_consultas_graficos.sql`<br>`dash2_2_atualizar_graficos.sql` | Views para dashboards |
-| Dashboard Estratégico | `Dashboard_estrategico.sql` | Métricas estratégicas |
+| Dashboard Estratégico | `dash1_1_consultas_agrupadas` | Métricas estratégicas |
 
 ### Como executar cada arquivo:
 
@@ -132,7 +132,7 @@ Cada módulo possui scripts de teste:
 | Autenticação | `tela1_2_rotina_de_teste.sql` | `CALL sp_loginusuario_login('00000000001', 'senha')` |
 | Cancelamento | `tela2_2_rotina_de_teste.sql` | `CALL sp_realizarcancelamentoseguro(21, 9, 'motivo')` |
 | Dashboards | `dash2_3_gerar_graficos.sql` | `CALL sp_atualizar_dashboard_operacional()` |
-| Dashboard Estratégico | `Test_dashboard.sql` | `SELECT * FROM vw_grafico_s1_novos_usuarios_pagantes_mes` |
+| Dashboard Estratégico | `dash1_2_gerar_graficos` | `SELECT * FROM vw_grafico_s1_novos_usuarios_pagantes_mes` |
 
 ## 📊 **Análise de Performance**
 
