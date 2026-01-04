@@ -84,12 +84,12 @@ Registro de todas as operações de cancelamento.
 
 ## **Telas Implementadas**
 1. Autenticação e Gestão de Credenciais
-   - Funcioanlidade de Login
+   - Funcionalidade de Login
    - Solicitar alteração da senha
    - Alterar a senha
 2. Gestão de Inscrições e Cancelamento Seguro
-  - Visualizar inscrições em eventos
-  - Solicitar o cancelamento de uma inscrição
+   - Visualizar inscrições em eventos
+   - Solicitar o cancelamento de uma inscrição
 
 ## 📈 **Dashboards Implementados**
 
@@ -139,11 +139,9 @@ Certifique-se de ter todos os arquivos abaixo salvos na mesma pasta:
 - Execute `tela2_1_funcionalidades.sql`.
 
 ### FASE 3: Implementar Dashboards
-1. Dashboard Estratégico (Marco 2):
+1. Dashboard Estratégico:
    - Execute `dash1_1_consultas_agrupadas.sql`.
-   - Execute `dash1_2_gerar_graficos.sql`.
-
-2. Dashboard Operacional (Marco 3):
+2. Dashboard Operacional:
    - Execute `dash2_1_consultas_graficos.sql`.
    - Execute `dash2_2_atualizar_graficos.sql`.
 
@@ -153,9 +151,15 @@ Certifique-se de ter todos os arquivos abaixo salvos na mesma pasta:
 2. Tela 2 - Gestão de Inscrições e Cancelamento Seguro
    - Execute passo a passo os comandos presentes no arquivo `tela2_2_rotina_de_teste.sql`
 3. Dashboard 1 - Estratégico
-   - a
-4. Dashboard 2 - Operacional
-   - a
+   - Abra o arquivo `dash1_2_gerar_graficos.sql`
+   - Gere as view para cada gráfico que compõe o dashboard
+   - Execute a consulta para o gráfico que deseja exibir
+   - Acesse o Graph Visualizer e carregue os dados retornados pela query
+5. Dashboard 2 - Operacional
+   - Abra o arquivo `dash2_3_gerar_graficos.sql`
+   - Atualize as views chamando a Stored Procedure
+   - Execute a consulta para o gráfico que deseja exibir
+   - Acesse o Graph Visualizer e carregue os dados retornados pela query
 
 **Desenvolvido para disciplina de Banco de Dados**  
 🎓 *Sistema completo de gestão acadêmica com foco em performance e usabilidade*
